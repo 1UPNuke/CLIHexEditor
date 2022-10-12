@@ -121,7 +121,7 @@ void printheader() {
         printf("%02" SCNx8 " ", i);
     }
 
-    printf("\t DECODED TEXT \n" RESET_COLOR);
+    printf("\tDECODED TEXT \n" RESET_COLOR);
 }
 
 void printrow(uint32_t offset, uint8_t* row, uint8_t size, uint32_t diffoffset, uint32_t diffsize) {
@@ -148,7 +148,7 @@ void printrow(uint32_t offset, uint8_t* row, uint8_t size, uint32_t diffoffset, 
 
         if (i >= size) break;
         //Print "." if character is not printable
-        if (!isprint(row[i])) printf(" .");
+        if (!isprint(row[i])) printf(". ");
         //Print the character
         else printf("%c ", row[i]);
     }
