@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    //Try opening file before askign what to do with it
+    //Try opening file before asking what to do with it
     FILE* fp = openfile(argv[1], "r");
     fclose(fp);
     //Enter the interactive terminal
@@ -116,7 +116,7 @@ bool inoffsetrange(uint32_t x, uint32_t start, uint8_t size) {
 void printheader() {
     printf(ACCENT_COLOR "  OFFSET  ");
 
-    //Print digits auint32_t the header depending on the row width
+    //Print digits along the header depending on the row width
     for (uint8_t i = 0; i < BYTES_PER_ROW; i++) {
         printf("%02" SCNx8 " ", i);
     }
