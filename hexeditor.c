@@ -69,7 +69,7 @@ void printhelp(char* path) {
     printf("Usage: %s [FILE]\n   or: %s [OPTION]\n", path, path);
     printf("Opens a FILE in a hex editor\n");
     printf("\n\t-h, --help\tdisplay this help and exit\n");
-    printf("\nExit status : \n 0 if OK\n 1 if error\n");
+    printf("\nExit status:\n 0 if OK\n 1 if error\n");
 }
 
 
