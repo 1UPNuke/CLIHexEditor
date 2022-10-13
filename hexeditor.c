@@ -17,6 +17,7 @@
 #define ACCENT_COLOR "\x1b[90m"
 #define SUCCESS_COLOR "\x1b[92m"
 #define HIGHLIGHT_COLOR "\x1b[30;46m"
+#define INFO_COLOR "\x1b[36m"
 
 FILE* openfile(char* path, char* mode);
 uint32_t swapendian(uint32_t n);
@@ -70,7 +71,7 @@ void terminal(char* path) {
     while (1) {
         //Get operation from user
         char op[MAX_STR_LEN];
-        printf("Specify operation (r)ead / (w)rite / (s)ave / (l)oad / (e)xit: ");
+        printf("\nSpecify operation (r)ead / (w)rite / (s)ave / (l)oad / (e)xit: ");
         fgets(op, sizeof(op), stdin);
         switch (tolower(*op)) {
             case 'r': read(path); break;
@@ -186,9 +187,9 @@ void printfile(FILE* fp, uint32_t offset, int32_t rows) {
 
         //Store a character in the buffer
         row[i] = fgetc(fp);
-        
+
         if (row[i] == EOF) break;
-        
+
         offset++; i++;
     }
     //Print the last row that was left over
@@ -209,13 +210,14 @@ void getinput(char* msg, char* format, void* output) {
 void read(char* path) {
     //Use 32-bit unsigned integer to support files up to 4.2GB
     uint32_t offset = 0;
-    getinput("Offset in bytes to start reading from as hex (Enter: 0): ", "%8" SCNx32, &offset);
+    getinput("\nOffset in bytes to start reading from as hex (Enter: 0): ", "%8" SCNx32, &offset);
 
     //Ask the user for the number of rows to print
     int32_t rows = 0;
     getinput("Number of rows to read (Enter: 0 to read until EOF): ", "%" SCNi32, &rows);
 
     //Print
+    printf("\n");
     FILE* fp = openfile(path, "rb");
     printfile(fp, offset, rows);
     fclose(fp);
@@ -229,7 +231,7 @@ void printdiff(FILE* fp, uint32_t offset, uint8_t size, uint8_t* bytes) {
     uint8_t row[BYTES_PER_ROW] = { 0 };
     uint8_t i = 0;
 
-    printf("Preview changes:\n");
+    printf("\nPreview changes:\n");
     //Print the first header row
     printheader();
 
@@ -277,7 +279,7 @@ void printdiff(FILE* fp, uint32_t offset, uint8_t size, uint8_t* bytes) {
 void write(char* path) {
     //Use 32-bit unsigned integer to support files up to 4.2GB
     uint32_t offset = 0;
-    getinput("Offset in bytes to start writing to as hex (Enter: 0): ", "%" SCNx32, &offset);
+    getinput("\nOffset in bytes to start writing to as hex (Enter: 0): ", "%" SCNx32, &offset);
 
     char buffer[MAX_STR_LEN];
     //Read bytes from user into string
@@ -286,13 +288,13 @@ void write(char* path) {
         printf("Bytes to write as a string of hex digits: ");
         fgets(buffer, sizeof(buffer), stdin);
     } while (sscanf(buffer, "%" SCNx8, bytes) == 0);
-    
+
     //Write bytes to array and find the size
     uint8_t size = 0;
     for (size = 0; size < UINT8_MAX; size++) {
-        if (sscanf(&buffer[size*2], " %02" SCNx8, &bytes[size]) <= 0) break;
+        if (sscanf(&buffer[size * 2], " %02" SCNx8, &bytes[size]) <= 0) break;
     }
-    printf("Parsed %d bytes\n", size);
+    printf(INFO_COLOR "Parsed %d bytes\n" RESET_COLOR, size);
 
     if (size == 0) return;
 
@@ -318,7 +320,7 @@ void write(char* path) {
     fwrite(bytes, sizeof(*bytes), size, logfp);
 
     fclose(logfp);
-    
+
     printf(SUCCESS_COLOR "Appended changelog to \"%s\", enter (s)ave to commit changes\n" RESET_COLOR, logpath);
 }
 
@@ -345,7 +347,7 @@ void save(char* path) {
 void load(char* path) {
     //Get file from user
     char logpath[MAX_STR_LEN];
-    printf("Path to the logfile to be loaded: ");
+    printf("\nPath to the logfile to be loaded: ");
     fgets(logpath, sizeof(logpath), stdin);
 
     logpath[strlen(logpath) - 1] = 0;
