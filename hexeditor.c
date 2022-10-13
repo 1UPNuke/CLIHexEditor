@@ -200,7 +200,7 @@ void getinput(char* msg, char* format, void* output) {
     char buffer[MAX_STR_LEN];
     //Keep asking for input until the format is correct
     do {
-        printf(msg);
+        printf("%s", msg);
         fgets(buffer, sizeof(buffer), stdin);
     } while (sscanf(buffer, format, output) == 0);
 }
