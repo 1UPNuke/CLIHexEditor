@@ -22,6 +22,7 @@
 FILE* openfile(char* path, char* mode);
 uint32_t swapendian(uint32_t n);
 void printheader();
+void printhelp(char* path);
 void printrow(uint32_t offset, uint8_t* row, uint8_t size, uint32_t diffoffset, uint32_t diffsize);
 void seekoffset(FILE* fp, uint32_t offset);
 bool inoffsetrange(uint32_t x, uint32_t start, uint8_t size);
@@ -37,20 +38,10 @@ void log2file(FILE* log, FILE* file);
 
 
 
-uint32_t swapendian(uint32_t n) {
-    return (
-        ((n >> 24) & 0xff) |     // move byte 3 to byte 0
-        ((n << 8) & 0xff0000) |  // byte 1 to byte 2
-        ((n >> 8) & 0xff00) |    // byte 2 to byte 1
-        ((n << 24) & 0xff000000) // byte 0 to byte 3    
-    );
-}
-
-
-
 int main(int argc, char** argv) {
     if (argc < 2) {
         fprintf(stderr, "Missing file path!\n");
+        printhelp(argv[0]);
         return 1;
     }
     if (argc > 2) {
@@ -59,10 +50,7 @@ int main(int argc, char** argv) {
     }
 
     if (strncmp(argv[1], "-h", 2) == 0 || strncmp(argv[1], "--h", 2) == 0) {
-        printf("Usage: %s [FILE]\n   or: %s [OPTION]\n", argv[0], argv[0]);
-        printf("Opens a FILE in a hex editor\n");
-        printf("\n\t - h, --help\tdisplay this help and exit\n");
-        printf("\nExit status : \n 0 if OK\n 1 if error\n");
+        printhelp(argv[0]);
         return 0;
     }
 
@@ -74,6 +62,28 @@ int main(int argc, char** argv) {
 
     return 0;
 }
+
+
+
+void printhelp(char* path) {
+    printf("Usage: %s [FILE]\n   or: %s [OPTION]\n", path, path);
+    printf("Opens a FILE in a hex editor\n");
+    printf("\n\t - h, --help\tdisplay this help and exit\n");
+    printf("\nExit status : \n 0 if OK\n 1 if error\n");
+}
+
+
+
+uint32_t swapendian(uint32_t n) {
+    return (
+        ((n >> 24) & 0xff) |     // move byte 3 to byte 0
+        ((n << 8) & 0xff0000) |  // byte 1 to byte 2
+        ((n >> 8) & 0xff00) |    // byte 2 to byte 1
+        ((n << 24) & 0xff000000) // byte 0 to byte 3    
+    );
+}
+
+
 
 void terminal(char* path) {
     while (1) {
