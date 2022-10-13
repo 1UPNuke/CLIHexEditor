@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    if (strncmp(argv[1], "-h", 2) == 0 || strncmp(argv[1], "--h", 2) == 0) {
+    if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--h") == 0) {
         printhelp(argv[0]);
         return 0;
     }
