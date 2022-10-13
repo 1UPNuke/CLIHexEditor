@@ -58,6 +58,14 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    if (strncmp(argv[1], "-h", 2) == 0 || strncmp(argv[1], "--h", 2) == 0) {
+        printf("Usage: %s [FILE]\n   or: %s [OPTION]\n", argv[0], argv[0]);
+        printf("Opens a FILE in a hex editor\n");
+        printf("\n\t - h, --help\tdisplay this help and exit\n");
+        printf("\nExit status : \n 0 if OK\n 1 if error\n");
+        return 0;
+    }
+
     //Try opening file before asking what to do with it
     FILE* fp = openfile(argv[1], "r");
     fclose(fp);
