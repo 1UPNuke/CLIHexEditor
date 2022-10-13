@@ -99,7 +99,7 @@ FILE* openfile(char* path, char* mode) {
 
 void seekoffset(FILE* fp, uint32_t offset) {
     //Seek to the specified offset, work around offset being signed
-    if (offset > LONG_MAX) {
+    if (offset > (uint32_t) LONG_MAX) {
         fseek(fp, LONG_MAX, SEEK_SET);
         fseek(fp, offset - LONG_MAX, SEEK_CUR);
     }
@@ -188,8 +188,6 @@ void printfile(FILE* fp, uint32_t offset, int32_t rows) {
         //Store a character in the buffer
         row[i] = fgetc(fp);
 
-        if (row[i] == EOF) break;
-
         offset++; i++;
     }
     //Print the last row that was left over
@@ -239,8 +237,6 @@ void printdiff(FILE* fp, uint32_t offset, uint8_t size, uint8_t* bytes) {
     uint32_t diffoffset = offset;
     offset = offset / BYTES_PER_ROW * BYTES_PER_ROW;
     seekoffset(fp, offset);
-
-    bool iseof = false;
 
     while (1) {
 
