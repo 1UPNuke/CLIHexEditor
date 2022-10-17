@@ -155,7 +155,7 @@ void printrow(uint32_t offset, uint8_t* row, size_t size, uint32_t diffoffset, u
         if (inoffsetrange(offset + i, diffoffset, difflen) && difflen) printf(HIGHLIGHT_COLOR);
 
         if (i < size) printf("%02X ", row[i]);
-        //Padding to prepare align decoded text
+        //Padding to align decoded text
         else printf("   ");
     }
     printf("\t");
