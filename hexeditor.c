@@ -109,7 +109,7 @@ FILE* openfile(char* path, char* mode) {
     FILE* fp = fopen(path, mode);
     //If we failed to read the file print an error and exit
     if (fp == NULL || fp == 0) {
-        fprintf(stderr, "Error: %s\n", strerror(errno));
+        perror("Error");
         exit(1);
     }
 
