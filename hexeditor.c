@@ -23,10 +23,10 @@ FILE* openfile(char* path, char* mode);
 uint32_t swapendian(uint32_t n);
 void printheader();
 void printhelp(char* path);
-void printrow(uint32_t offset, uint8_t* row, uint8_t size, uint32_t diffoffset, uint32_t diffsize);
+void printrow(uint32_t offset, uint8_t* row, size_t size, uint32_t diffoffset, uint8_t difflen);
 void seekoffset(FILE* fp, uint32_t offset);
-bool inoffsetrange(uint32_t x, uint32_t start, uint8_t size);
-void printfile(FILE* fp, uint32_t offset, int32_t rows);
+bool inoffsetrange(uint32_t x, uint32_t start, size_t size);
+void printfile(FILE* fp, uint32_t offset, uint32_t rows);
 void printdiff(FILE* fp, uint32_t offset, uint8_t size, uint8_t* bytes);
 void getinput(char* msg, char* format, void* output);
 void read(char* path);
@@ -126,7 +126,7 @@ void seekoffset(FILE* fp, uint32_t offset) {
     }
 }
 
-bool inoffsetrange(uint32_t x, uint32_t start, uint8_t size) {
+bool inoffsetrange(uint32_t x, uint32_t start, size_t size) {
     return (x >= start && x < start + size);
 }
 
@@ -143,7 +143,7 @@ void printheader() {
     printf("\tDECODED TEXT \n" RESET_COLOR);
 }
 
-void printrow(uint32_t offset, uint8_t* row, uint8_t size, uint32_t diffoffset, uint32_t diffsize) {
+void printrow(uint32_t offset, uint8_t* row, size_t size, uint32_t diffoffset, uint8_t difflen) {
     //Print the current offset of the file
     printf(ACCENT_COLOR " %08" SCNx32 " " RESET_COLOR, offset);
 
@@ -151,7 +151,7 @@ void printrow(uint32_t offset, uint8_t* row, uint8_t size, uint32_t diffoffset, 
     for (uint8_t i = 0; i < BYTES_PER_ROW; i++) {
         printf(RESET_COLOR);
         //Highlight changed bytes if any
-        if (inoffsetrange(offset + i, diffoffset, diffsize) && diffsize) printf(HIGHLIGHT_COLOR);
+        if (inoffsetrange(offset + i, diffoffset, difflen) && difflen) printf(HIGHLIGHT_COLOR);
 
         if (i < size) printf("%02X ", row[i]);
         //Padding to prepare align decoded text
@@ -163,7 +163,7 @@ void printrow(uint32_t offset, uint8_t* row, uint8_t size, uint32_t diffoffset, 
     for (uint8_t i = 0; i < BYTES_PER_ROW; i++) {
         printf(RESET_COLOR);
         //Highlight changed bytes if any
-        if (inoffsetrange(offset + i, diffoffset, diffsize) && diffsize) printf(HIGHLIGHT_COLOR);
+        if (inoffsetrange(offset + i, diffoffset, difflen) && difflen) printf(HIGHLIGHT_COLOR);
 
         if (i >= size) break;
         //Print "." if character is not printable
@@ -175,41 +175,31 @@ void printrow(uint32_t offset, uint8_t* row, uint8_t size, uint32_t diffoffset, 
     printf("\n");
 }
 
-void printfile(FILE* fp, uint32_t offset, int32_t rows) {
-    //Define a buffer to store the row currently being read
-    uint8_t row[BYTES_PER_ROW] = { 0 };
-    uint8_t i = 0;
-
+void printfile(FILE* fp, uint32_t offset, uint32_t rows) {
     //Print the first header row
     printheader();
 
+    //Seek to the correct offset to start reading
     seekoffset(fp, offset);
 
-    while (!feof(fp)) {
+    //Define a buffer to store the row currently being read
+    uint8_t row[BYTES_PER_ROW] = { 0 };
+    size_t size = 0;
 
-        //If we reached the end of the row
-        if (i % BYTES_PER_ROW == 0 && i != 0) {
-            //Check if we reached the correct amount of rows already
-            if (rows != 0) {
-                rows--;
-                if (rows == 0) {
-                    i++;
-                    offset++;
-                    break;
-                }
-            }
-            //Round the offset and print the row
-            printrow(offset - i, row, i, 0, 0);
-            i = 0;
+    //Read rows into buffer
+    while ((size = fread(row, 1, BYTES_PER_ROW, fp)) > 0)
+    {
+        //Print the row
+        printrow(offset, row, size, 0, 0);
+
+        //Check if correct amount of rows has been read
+        if (rows != 0) {
+            rows--;
+            if (rows == 0) break;
         }
 
-        //Store a character in the buffer
-        row[i] = fgetc(fp);
-
-        offset++; i++;
+        offset += BYTES_PER_ROW;
     }
-    //Print the last row that was left over
-    printrow(offset - i, row, i - 1, 0, 0);
 }
 
 void getinput(char* msg, char* format, void* output) {
@@ -229,7 +219,7 @@ void read(char* path) {
     getinput("\nOffset in bytes to start reading from as hex (Enter: 0): ", "%8" SCNx32, &offset);
 
     //Ask the user for the number of rows to print
-    int32_t rows = 0;
+    uint32_t rows = 0;
     getinput("Number of rows to read (Enter: 0 to read until EOF): ", "%" SCNi32, &rows);
 
     //Print
@@ -242,11 +232,7 @@ void read(char* path) {
 
 
 
-void printdiff(FILE* fp, uint32_t offset, uint8_t size, uint8_t* bytes) {
-    //Define a buffer to store the row currently being read
-    uint8_t row[BYTES_PER_ROW] = { 0 };
-    uint8_t i = 0;
-
+void printdiff(FILE* fp, uint32_t offset, uint8_t difflen, uint8_t* bytes) {
     printf("\nPreview changes:\n");
     //Print the first header row
     printheader();
@@ -256,38 +242,29 @@ void printdiff(FILE* fp, uint32_t offset, uint8_t size, uint8_t* bytes) {
     offset = offset / BYTES_PER_ROW * BYTES_PER_ROW;
     seekoffset(fp, offset);
 
-    while (1) {
+    //Define a buffer to store the row currently being read
+    uint8_t row[BYTES_PER_ROW] = { 0 };
+    size_t size = 0;
 
-        //If we reached the end of the row
-        if (i % BYTES_PER_ROW == 0 && i != 0) {
-            //Round the offset and print the row
-            printrow(offset - i, row, i, diffoffset, size);
-            i = 0;
+    //Read rows into buffer
+    while ((size = fread(row, 1, BYTES_PER_ROW, fp)) > 0)
+    {
+        //Check if we are past the diff
+        if (offset > diffoffset + difflen - 1) return;
 
-            //Check if we are past the diff
-            if (offset > diffoffset + size - 1) {
-                return;
+        //Loop through the characters in the row
+        for (size_t i = 0; i < size; i++) {
+            //If we are in the diff
+            if (inoffsetrange(offset, diffoffset, difflen)) {
+                //Replace the character
+                row[i] = bytes[offset - diffoffset];
             }
+            offset++;
         }
 
-        //Store a character in the buffer, depending on the offset
-        if (inoffsetrange(offset, diffoffset, size)) {
-            //If in the diff range, use a byte from the diff
-            row[i] = bytes[offset - diffoffset];
-            fgetc(fp);
-        }
-        else {
-            //Else get it from the file
-            row[i] = fgetc(fp);
-        }
-
-        //If at the end of the file and past the diff range we can break
-        if (feof(fp) && (offset > diffoffset + size - 1)) break;
-
-        offset++; i++;
+        //Print the row
+        printrow(offset - BYTES_PER_ROW, row, size, diffoffset, difflen);
     }
-    //Print the last row that was left over
-    printrow(offset - i, row, i, diffoffset, size);
 }
 
 void write(char* path) {
