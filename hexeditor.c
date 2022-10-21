@@ -123,19 +123,19 @@ void getinput(char* msg, char* format, void* output) {
     } while (sscanf(buffer, format, output) == 0);
 }
 
-void printfile(FILE* fp, uint32_t offset, uint32_t rows) {
+void printfile(FILE* mainfp, uint32_t offset, uint32_t rows) {
     //Print the first header row
     printheader();
 
     //Seek to the correct offset to start reading
-    seekoffset(fp, offset);
+    seekoffset(mainfp, offset);
 
     //Define a buffer to store the row currently being read
     uint8_t row[BYTES_PER_ROW] = { 0 };
     size_t size = 0;
 
     //Read rows into buffer
-    while ((size = fread(row, 1, BYTES_PER_ROW, fp)) > 0)
+    while ((size = fread(row, 1, BYTES_PER_ROW, mainfp)) > 0)
     {
         //Print the row
         printrow(offset, row, size, 0, 0);
@@ -266,7 +266,7 @@ void write(char* path) {
     printf(SUCCESS_COLOR "Appended changelog to \"%s\", enter (s)ave to commit changes\n" RESET_COLOR, logpath);
 }
 
-void printdiff(FILE* fp, uint32_t offset, uint8_t difflen, uint8_t* bytes) {
+void printdiff(FILE* mainfp, uint32_t offset, uint8_t difflen, uint8_t* bytes) {
     printf("\nPreview changes:\n");
     //Print the first header row
     printheader();
@@ -274,14 +274,14 @@ void printdiff(FILE* fp, uint32_t offset, uint8_t difflen, uint8_t* bytes) {
     //Seek to the beginning of the line before the offset
     uint32_t diffoffset = offset;
     offset = offset / BYTES_PER_ROW * BYTES_PER_ROW;
-    seekoffset(fp, offset);
+    seekoffset(mainfp, offset);
 
     //Define a buffer to store the row currently being read
     uint8_t row[BYTES_PER_ROW] = { 0 };
     size_t size = 0;
 
     //Read rows into buffer
-    while ((size = fread(row, 1, BYTES_PER_ROW, fp)) > 0)
+    while ((size = fread(row, 1, BYTES_PER_ROW, mainfp)) > 0)
     {
         //Check if we are past the diff
         if (offset > diffoffset + difflen - 1) { return; }
