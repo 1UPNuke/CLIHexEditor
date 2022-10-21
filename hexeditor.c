@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
     //Try opening file before asking what to do with it
     FILE* fp = openfile(argv[1], "r");
     fclose(fp);
-    
+
     //Enter the interactive terminal
     terminal(argv[1]);
 
@@ -237,6 +237,7 @@ void write(char* path) {
     }
     printf(INFO_COLOR "Parsed %d bytes\n" RESET_COLOR, size);
 
+    //If we read no bytes, don't do anything
     if (size == 0) { return; }
 
     //Print preview of changes
