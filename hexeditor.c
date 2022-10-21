@@ -55,6 +55,7 @@ int main(int argc, char** argv) {
     //Try opening file before asking what to do with it
     FILE* fp = openfile(argv[1], "r");
     fclose(fp);
+    
     //Enter the interactive terminal
     terminal(argv[1]);
 
@@ -85,12 +86,14 @@ void terminal(char* path) {
         char op[MAX_STR_LEN];
         printf("\nSpecify operation (r)ead / (w)rite / (s)ave / (l)oad / (e)xit: ");
         fgets(op, sizeof(op), stdin);
+        //If operation matches, perform task, else ask again
         switch (tolower(*op)) {
             case 'r': read(path); break;
             case 'w': write(path); break;
             case 's': save(path); break;
             case 'l': load(path); break;
             case 'e': exit(0); return;
+            default: break;
         }
     }
 }
