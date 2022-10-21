@@ -86,11 +86,11 @@ void terminal(char* path) {
         printf("\nSpecify operation (r)ead / (w)rite / (s)ave / (l)oad / (e)xit: ");
         fgets(op, sizeof(op), stdin);
         switch (tolower(*op)) {
-        case 'r': read(path); break;
-        case 'w': write(path); break;
-        case 's': save(path); break;
-        case 'l': load(path); break;
-        case 'e': exit(0); return;
+            case 'r': read(path); break;
+            case 'w': write(path); break;
+            case 's': save(path); break;
+            case 'l': load(path); break;
+            case 'e': exit(0); return;
         }
     }
 }
@@ -303,7 +303,7 @@ uint32_t swapendian(uint32_t n) {
         ((n << 8) & 0xff0000) |  // byte 1 to byte 2
         ((n >> 8) & 0xff00) |    // byte 2 to byte 1
         ((n << 24) & 0xff000000) // byte 0 to byte 3    
-        );
+    );
 }
 
 void save(char* path) {
